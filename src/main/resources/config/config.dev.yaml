@@ -1,0 +1,25 @@
+anypoint:
+  mq:
+    client_id: "![aIx1NKr1Hl3IEnQWnxDXxMFDOWR6v2E86V/9jtldNu+QreCeY79g0w==]"
+    client_secret: "![Wn5TnPGuu6WigTCe5QeGz48KHccJe3VtUaaS8+isAYoR7xwUFB8C2Q==]"
+    queue: "pxRe4DPeshb7v+WLmjeA8g=="
+mft:
+  config:
+    client_id: "![RA7GrzbnAC4rkYBcXQjhCTvJ4zmOhilY/C0Rn6EtvF2t2mFhFX8xVw==]"
+    client_secret: "![jIPiKhDGtN8g9IEnAjrLtVZvsK5HIPu+AQeBoQ3PL+xo2wz0MjZUBw==]"
+    host: "mft-config-sapi.us-e2.cloudhub.io"
+    protocol: "HTTP"
+    basePath: "/api/"
+    port: "80"
+  papi:
+    client_id: "![RA7GrzbnAC4rkYBcXQjhCTvJ4zmOhilY/C0Rn6EtvF2t2mFhFX8xVw==]"
+    client_secret: "![jIPiKhDGtN8g9IEnAjrLtVZvsK5HIPu+AQeBoQ3PL+xo2wz0MjZUBw==]"
+    host: "mft-job-papi.us-e2.cloudhub.io"
+    protocol: "HTTP"
+    basePath: "/api/"
+    port: "80"
+mongodb:
+  host: "![v5ds7yptZNPPWoYUaPiuy6OvX6vyH2o0ZVdgNe3MhaeRHTE+XG1Kiw==]"
+  db: "![a+cogM3DLEA=]"
+  username: "![8Tt+KpRES5eVLwW7ZFWb3w==]"
+  password: "![2AD+0Mr7YSkcGGuJRkN47IApiOkluoI/]"

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:file="http://www.mulesoft.org/schema/mule/file" xmlns:sftp="http://www.mulesoft.org/schema/mule/sftp"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/sftp http://www.mulesoft.org/schema/mule/sftp/current/mule-sftp.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd">
+	<sftp:config name="SFTP-Stream_Inbound" doc:name="SFTP Config" doc:id="8bb54b91-ad7f-490b-915c-27d98a2f293c" >
+		<sftp:connection host="#[vars.task.inbound.systemConfig.host]" port="#[vars.task.inbound.systemConfig.port]" username="#[vars.task.inbound.systemConfig.username]" password="#[vars.task.inbound.systemConfig.password]" />
+	</sftp:config>
+	<sftp:config name="SFTP-Stream_Outbound" doc:name="SFTP Config" doc:id="e4b4dc42-62e7-4e0f-a056-8cfce7a7b0ca" >
+		<sftp:connection host="#[vars.task.outbound.systemConfig.host]" port="#[vars.task.outbound.systemConfig.port]" username="#[vars.task.outbound.systemConfig.username]" password="#[vars.task.outbound.systemConfig.password]" />
+	</sftp:config>
+	<flow name="system::SFTP-Stream::inbound" doc:id="ae63e59f-cdce-4434-90a2-0c1f60920811" >
+		<choice doc:name="no point in streaming to nothing" doc:id="016a3e69-1c96-4d87-96b2-41cfc03bd174" >
+			<when expression="#[vars.task.outbound? and vars.task.outbound != null]">
+				<sftp:list doc:name="List" doc:id="2212b10f-15cf-45da-ac8c-698f759e0951" config-ref="SFTP-Stream_Inbound" directoryPath="#[vars.task.inbound.jobConfig.sourcePath]">
+			<sftp:matcher filenamePattern="#[vars.task.inbound.jobConfig.sourceFilePattern]" />
+		</sftp:list>
+				<foreach doc:name="For Each" doc:id="7d0c7133-f0d1-4648-b98a-a872045e790d" collection="#[payload]">
+			<flow-ref doc:name="we're streaming so call outbound here" doc:id="522091aa-eef2-45a6-992b-cd3c5e1b6130" name='#["system::$(vars.task.outbound.systemType)::outbound"]' target="outboundResult" />
+			<sftp:delete doc:name="Delete" doc:id="78636140-1139-4e86-bdae-fa22cd3e037a" config-ref="SFTP-Stream_Inbound" path="#[attributes.path]" />
+				</foreach>
+				<set-variable value='#[vars.task - "outbound"]' doc:name="remove outbound so it isn't handled again" doc:id="ce5d9fd5-0cdc-4beb-baed-9fbf80971c67" variableName="task"/>
+			</when>
+		</choice>
+	</flow>
+	<flow name="system::SFTP-Stream::outbound" doc:id="f15d9ae3-7f65-4257-9ad1-5c4ff1ea3bd1" >
+		<sftp:write doc:name="Write" doc:id="1aa7f815-70a8-4c63-8acc-29e9357195c6" config-ref="SFTP-Stream_Outbound" path='#["$(vars.task.outbound.jobConfig.destPath)/$(attributes.fileName)"]' />
+		<logger level="INFO" doc:name="Logger" doc:id="8eb41c11-5fd0-4a14-a2b0-7dc673a8beb9" />
+	</flow>
+</mule>

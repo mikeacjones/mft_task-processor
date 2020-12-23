@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:mft-job-papi="http://www.mulesoft.org/schema/mule/mft-job-papi" xmlns:secure-properties="http://www.mulesoft.org/schema/mule/secure-properties"
+	xmlns:anypoint-mq="http://www.mulesoft.org/schema/mule/anypoint-mq"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/anypoint-mq http://www.mulesoft.org/schema/mule/anypoint-mq/current/mule-anypoint-mq.xsd
+http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/schema/mule/secure-properties/current/mule-secure-properties.xsd
+http://www.mulesoft.org/schema/mule/mft-job-papi http://www.mulesoft.org/schema/mule/mft-job-papi/current/mule-mft-job-papi.xsd">
+	<anypoint-mq:config name="Anypoint_MQ_Config" doc:name="Anypoint MQ Config" doc:id="145dc160-6765-4ba5-bb61-635fb579ada5" >
+		<anypoint-mq:connection clientId="${secure::anypoint.mq.client_id}" clientSecret="${secure::anypoint.mq.client_secret}" />
+	</anypoint-mq:config>
+	<global-property doc:name="Global Property" doc:id="6fb26ec8-c4ca-4e82-a659-8fc33b9e92e8" name="env" value="dev" />
+	<configuration-properties doc:name="Configuration properties" doc:id="5e2290a4-a6d4-4450-9fa3-f6c82de32c6b" file="config/config.${env}.yaml" />
+	<secure-properties:config name="Secure_Properties_Config" doc:name="Secure Properties Config" doc:id="0820b989-f834-4468-8be7-a887fecd4c76" file="config/config.${env}.yaml" key="${securePropertiesKey}" >
+		<secure-properties:encrypt algorithm="Blowfish" />
+	</secure-properties:config>
+	<mft-job-papi:config name="MFT_Job_PAPI_Config" doc:name="MFT Job PAPI Config" doc:id="27b3fb8c-8ab3-4b3f-9f59-3fd034470074" property_host="${mft.papi.host}" property_port="${mft.papi.port}" property_protocol="${mft.papi.protocol}" property_basePath="${mft.papi.basePath}" />
+</mule>

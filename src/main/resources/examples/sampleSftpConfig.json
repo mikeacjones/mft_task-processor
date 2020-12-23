@@ -1,0 +1,15 @@
+{
+    "systemType": "SFTP",
+    "jobConfig": {
+      "sourcePath": "/upload/Mulesoft/upload/",
+      "sourceFilePattern": "*.csv",
+      "destPath": "/users/mjones1/mft/Mulesoft/in/",
+      "destFilePattern": "*.csv"
+    },
+    "systemConfig": {
+      "host": "eksprod.tools.mulesoft.com",
+      "port": 31969,
+      "username": "mulesoft",
+      "password": "thisIsAPassword"
+    }
+  }

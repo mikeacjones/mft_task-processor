@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:mft-job-papi="http://www.mulesoft.org/schema/mule/mft-job-papi"
+	xmlns:anypoint-mq="http://www.mulesoft.org/schema/mule/anypoint-mq"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/anypoint-mq http://www.mulesoft.org/schema/mule/anypoint-mq/current/mule-anypoint-mq.xsd
+http://www.mulesoft.org/schema/mule/mft-job-papi http://www.mulesoft.org/schema/mule/mft-job-papi/current/mule-mft-job-papi.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="mft-task-processorFlow" doc:id="69f61db0-0c4e-4c69-9f3d-ab76b6f07740">
+		<anypoint-mq:subscriber doc:name="Subscriber" doc:id="a8a1dc3d-5476-41fe-986c-97c45f6493bb" config-ref="Anypoint_MQ_Config" destination="mft-task-queue"/>
+		<ee:transform doc:name="set variables" doc:id="620b0283-18d6-49bd-9273-afa3e59f40d0" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="taskId" ><![CDATA[attributes.properties.taskId]]></ee:set-variable>
+				<ee:set-variable variableName="task" ><![CDATA[%dw 2.0
+output application/json
+---
+{
+    inbound: {
+        systemType: payload.systemInfo[payload.job.inboundSystem.id].systemType,
+        jobConfig: payload.job.inboundSystem.config,
+        systemConfig: payload.systemInfo[payload.job.inboundSystem.id].systemConfig
+    },
+    (outbound: {
+        systemType: payload.systemInfo[payload.job.outboundSystem.id].systemType,
+        jobConfig: payload.job.outboundSystem.config,
+        systemConfig: payload.systemInfo[payload.job.outboundSystem.id].systemConfig
+    }) if (payload.job.outboundSystem? and payload.job.outboundSystem != null)
+}]]></ee:set-variable>
+				<ee:set-variable variableName="jobId" ><![CDATA[payload.job.id]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<mft-job-papi:update-task-by-id-task-id doc:name="Update task by id task id" doc:id="6dda2b72-94c7-4fba-bcec-d341870f4462" id="#[vars.jobId]" task-id="#[vars.taskId]" client-id="${secure::mft.papi.client_id}" client-secret="${secure::mft.papi.client_secret}" config-ref="MFT_Job_PAPI_Config">
+			<mft-job-papi:update-task-by-id-task-id-request-data ><![CDATA[#[{ status: "STARTED" }]]]></mft-job-papi:update-task-by-id-task-id-request-data>
+		</mft-job-papi:update-task-by-id-task-id>
+		<flow-ref doc:name="do-inbound" doc:id="fd89e700-0b80-4897-929c-05e52c499fae" name='#["system::$(vars.task.inbound.systemType)::inbound"]'/>
+		<choice doc:name="Choice" doc:id="a51dbf18-a557-4e3a-b3d6-924fc3c47393" >
+			<when expression="#[vars.task.outbound? and vars.task.outbound != null]">
+				<flow-ref doc:name="do-outbound" doc:id="efb895c1-1f05-4762-a234-b1647bc5ad79" name='#["system::$(vars.task.outbound.systemType)::outbound"]'/>
+			</when>
+		</choice>
+		<mft-job-papi:update-task-by-id-task-id doc:name="Update task by id task id" doc:id="0a32fb7d-fa1b-46ed-9b22-36a17fe5c167" config-ref="MFT_Job_PAPI_Config" id="#[vars.jobId]" task-id="#[vars.taskId]" client-id="${secure::mft.papi.client_id}" client-secret="${secure::mft.papi.client_secret}">
+			<mft-job-papi:update-task-by-id-task-id-request-data ><![CDATA[#[output application/json
+---
+{ status: "FINISHED" }]]]></mft-job-papi:update-task-by-id-task-id-request-data>
+		</mft-job-papi:update-task-by-id-task-id>
+		<logger level="INFO" doc:name="Logger" doc:id="d124c59e-0163-444c-b5cd-1292e228f67e" />
+		<error-handler >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="f1580d8c-1f15-4575-b6af-a0d28b16bc4e" type="ANY">
+				<mft-job-papi:update-task-by-id-task-id doc:name="Set task to failed" doc:id="5f68c7ef-c514-4bc8-8044-268c113c1506" config-ref="MFT_Job_PAPI_Config" id="#[vars.jobId]" task-id="#[vars.taskId]" client-id="${secure::mft.papi.client_id}" client-secret="${secure::mft.papi.client_secret}" >
+					<mft-job-papi:update-task-by-id-task-id-request-data ><![CDATA[#[output application/json
+---
+{ status: "FAILED" }]]]></mft-job-papi:update-task-by-id-task-id-request-data>
+				</mft-job-papi:update-task-by-id-task-id>
+			</on-error-propagate>
+		</error-handler>
+	</flow>
+</mule>

@@ -1,0 +1,44 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<types:mule xmlns:types="http://www.mulesoft.org/schema/mule/types">
+  <types:catalog>
+    <types:type name="sftpConfigSample" format="json">
+      <types:shape format="weave" example="examples/sampleSftpConfig.json"><![CDATA[%dw 2.0
+
+type sftpConfigSample = {|
+  systemType: String, 
+  jobConfig: {|
+    sourcePath: String, 
+    sourceFilePattern: String, 
+    destPath: String, 
+    destFilePattern: String
+  |}, 
+  systemConfig: {|
+    host: String, 
+    port: Number {"typeId": "int"}, 
+    username: String, 
+    password: String
+  |}
+|} {"example": "{\\\"systemType\\\":\\\"SFTP\\\",\\\"jobConfig\\\":{\\\"sourcePath\\\":\\\"\\/upload\\/Mulesoft\\/upload\\/\\\",\\\"sourceFilePattern\\\":\\\"*.csv\\\",\\\"destPath\\\":\\\"\\/users\\/mjones1\\/mft\\/Mulesoft\\/in\\/\\\",\\\"destFilePattern\\\":\\\"*.csv\\\"},\\\"systemConfig\\\":{\\\"host\\\":\\\"eksprod.tools.mulesoft.com\\\",\\\"port\\\":31969,\\\"username\\\":\\\"mulesoft\\\",\\\"password\\\":\\\"thisIsAPassword\\\"}}"}
+
+]]></types:shape>
+    </types:type>
+  </types:catalog>
+  <types:enrichment select="#ae63e59f-cdce-4434-90a2-0c1f60920811">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="sftpConfigSample"/>
+        </types:message>
+      </types:input-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#f15d9ae3-7f65-4257-9ad1-5c4ff1ea3bd1">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="sftpConfigSample"/>
+        </types:message>
+      </types:input-event>
+    </types:processor-declaration>
+  </types:enrichment>
+</types:mule>

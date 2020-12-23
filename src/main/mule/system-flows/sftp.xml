@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:file="http://www.mulesoft.org/schema/mule/file" xmlns:sftp="http://www.mulesoft.org/schema/mule/sftp"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/sftp http://www.mulesoft.org/schema/mule/sftp/current/mule-sftp.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd">
+	<sftp:config name="SFTP_Inbound" doc:name="SFTP Inbound" doc:id="8bb54b91-ad7f-490b-915c-27d98a2f293c" >
+		<sftp:connection host="#[vars.task.inbound.systemConfig.host]" port="#[vars.task.inbound.systemConfig.port]" username="#[vars.task.inbound.systemConfig.username]" password="#[vars.task.inbound.systemConfig.password]" />
+	</sftp:config>
+	<sftp:config name="SFTP_Outbound" doc:name="SFTP Outbound" doc:id="3a06666f-0c72-4011-bcc8-0b51fde58114" >
+		<sftp:connection host="#[vars.task.outbound.systemConfig.host]" port="#[vars.task.outbound.systemConfig.port]" username="#[vars.task.outbound.systemConfig.username]" password="#[vars.task.outbound.systemConfig.password]" />
+	</sftp:config>
+	<flow name="system::SFTP::inbound" doc:id="ae63e59f-cdce-4434-90a2-0c1f60920811" >
+		<sftp:list doc:name="List" doc:id="2212b10f-15cf-45da-ac8c-698f759e0951" config-ref="SFTP_Inbound" directoryPath="#[vars.task.inbound.jobConfig.sourcePath]">
+			<sftp:matcher filenamePattern="#[vars.task.inbound.jobConfig.sourceFilePattern]" />
+		</sftp:list>
+		<foreach doc:name="For Each" doc:id="0d740261-c2a6-4746-ad8e-a76b6483ed8b" collection="#[payload]">
+			<file:write doc:name="Write" doc:id="f21b0b98-fbbd-4dfa-8d92-46f1136a39c5" path='#["$(vars.task.inbound.jobConfig.destPath)/$(attributes.fileName)"]'/>
+			<sftp:delete doc:name="Delete" doc:id="3b5fc71e-b924-40d6-8766-8d405aa10e69" config-ref="SFTP-Stream_Outbound" path="#[attributes.path]"/>
+		</foreach>
+		<logger level="INFO" doc:name="Logger" doc:id="d72ece57-79cd-413a-9486-ea7c34698b33" />
+	</flow>
+	<flow name="system::SFTP::outbound" doc:id="f15d9ae3-7f65-4257-9ad1-5c4ff1ea3bd1" >
+		<file:list doc:name="List" doc:id="10124a86-0082-4b26-a618-b5d3f9fa7bed" directoryPath="#[vars.task.outbound.jobConfig.sourcePath]">
+			<file:matcher filenamePattern="#[vars.task.outbound.jobConfig.sourceFilePattern]" />
+		</file:list>
+		<foreach doc:name="For Each" doc:id="251ae2c5-5b85-4c9b-9b32-9f899c9d9991" >
+			<sftp:write doc:name="Write" doc:id="1aa7f815-70a8-4c63-8acc-29e9357195c6" config-ref="SFTP_Outbound" path='#["$(vars.task.outbound.jobConfig.destPath)/$(attributes.fileName)"]'/>
+			<file:delete doc:name="Delete" doc:id="4c606b2a-3ea4-464e-9ad4-b84bcd8f2650" path="#[attributes.path]"/>
+		</foreach>
+		<logger level="INFO" doc:name="Logger" doc:id="8eb41c11-5fd0-4a14-a2b0-7dc673a8beb9" />
+	</flow>
+</mule>
